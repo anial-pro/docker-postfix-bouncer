@@ -3,29 +3,24 @@
 
 FROM debian:stretch-slim
 
+ENV POSTFIX_VERSION 3.1.12-0+deb9u1
+
 # install postfix
 RUN set -ex; \
     apt-get update \
     && apt-get -y --no-install-recommends install \
-        postfix=3.1.12-0+deb9u1 \
+        postfix="${POSTFIX_VERSION}" \
     ; \
     rm -rf /var/lib/apt/lists/*
 
-ENV RECIPIENT blackhole@example.com
 
+# setting postfix
 RUN set -ex; \
-    # add domain for receive mails
-    RECIPIENT_DOMAIN="$(echo "$RECIPIENT" | cut -d "@" -f 2)" \
-    && postconf mydestination="\$myhostname, localhost, $RECIPIENT_DOMAIN" \
-    \
-    # create "blackhole" for bounce message
-    && echo "$RECIPIENT discard:silently" > /etc/postfix/transport \
-    && postmap /etc/postfix/transport \
-    && postconf -e transport_maps="hash:/etc/postfix/transport" \
-    \
-    # other settings
-    && postconf -e inet_protocols=ipv4
+    postconf -e inet_protocols=ipv4
+
+
+COPY docker-entrypoint.sh /usr/local/bin/
+ENTRYPOINT ["docker-entrypoint.sh"]
 
 EXPOSE 25
-
 CMD ["/usr/lib/postfix/sbin/master", "-d"]
