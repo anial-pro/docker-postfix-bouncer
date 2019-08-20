@@ -3,7 +3,7 @@
 if [[ -n "${RECIPIENT}" ]]; then
     # add domain for receive mails
     RECIPIENT_DOMAIN="$(echo "$RECIPIENT" | cut -d "@" -f 2)"
-    postconf mydestination="\$myhostname, localhost, ${RECIPIENT_DOMAIN}"
+    postconf -e mydestination="\$myhostname, localhost, ${RECIPIENT_DOMAIN}"
 
     # create "blackhole" for bounce message
     echo "${RECIPIENT} discard:silently" > /etc/postfix/transport \
